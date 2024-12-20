@@ -5,6 +5,7 @@ get_user_blueprint = Blueprint('user', __name__)
 
 @get_user_blueprint.route('/api/v1/users', methods=['get'])
 def get_users():
+    global cur, con
     try:
         conn = get_connection()
         cur = conn.cursor()
@@ -12,10 +13,7 @@ def get_users():
         cur.execute('SELECT * FROM user')
 
         users = cur.fetchall()
-
-        cur.close()
-        conn.close()
-
+        
         users_json = []
         for user in users:
             users_json.append(
@@ -37,10 +35,15 @@ def get_users():
             'code': 500,
             'message': 'Internal server error. Please try again later'
         }
+    
+    finally:
+        cur.close()
+        conn.close()
 
 
 @get_user_blueprint.route('/api/v1/users/<int:user_id>', methods=['get'])
 def get_user(user_id):
+    global cur, conn
     try:
         conn = get_connection()
         cur = conn.cursor()
@@ -48,9 +51,6 @@ def get_user(user_id):
         cur.execute(f'SELECT * FROM user WHERE user_id={user_id}')
 
         user = cur.fetchone()
-
-        cur.close()
-        conn.close()
 
         if user:
             user_json = {
@@ -76,4 +76,8 @@ def get_user(user_id):
             'code': 500,
             'message': 'Internal server error. Please try again later'
         }
+    
+    finally:
+        cur.close()
+        conn.close()
         
